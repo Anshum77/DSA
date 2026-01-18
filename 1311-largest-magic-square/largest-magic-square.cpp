@@ -1,52 +1,85 @@
 class Solution {
 public:
-    bool isValid(int i, int j, vector<vector<int>>& grid, int len){
+    bool isValid(int i, int j, int len, vector<vector<int>>& grid, vector<vector<int>>& rowPrefix, vector<vector<int>>& colPrefix, vector<vector<int>>& mainDiaPrefix, vector<vector<int>>& antiDiaPrefix){
+        int sum = -1;
         int n = grid.size();
         int m = grid[0].size();
-        if(i+len>n || j+len>m) return false;
-        int sum = 0;
-        for(int k=j; k<j+len; k++){
-            sum += grid[i][k];
-        }
         for(int k=i; k<i+len; k++){
-            int rowsum = 0;
-            for(int l=j; l<j+len; l++){
-                rowsum += grid[k][l];
+            if(j==0){
+                if(sum==-1) sum = rowPrefix[k][len-1];
+                else{
+                    if(sum!=rowPrefix[k][len-1]) return false;
+                }
             }
-            if(sum!=rowsum) return false;
+            else{
+                if(sum==-1) sum = rowPrefix[k][j+len-1] - rowPrefix[k][j-1];
+                else{
+                    if(sum!=rowPrefix[k][j+len-1] - rowPrefix[k][j-1]) return false;
+                }
+            }
         }
         for(int k=j; k<j+len; k++){
-            int colsum = 0;
-            for(int l=i; l<i+len; l++){
-                colsum += grid[l][k];
+            if(i==0){
+                if(sum!=colPrefix[len-1][k]) return false;
             }
-            if(sum!=colsum) return false;
+            else{
+                if(sum!=colPrefix[i+len-1][k]-colPrefix[i-1][k]) return false;
+            }
         }
-        int k=i; int l=j;
-        int diasum = 0;
-        while(k<i+len && l<j+len){
-            diasum += grid[k][l];
-            k++; l++;
+        //Main diagonal sum:
+        if(i==0 || j==0){
+            if(sum!=mainDiaPrefix[i+len-1][j+len-1]) return false;
         }
-        if(diasum!=sum) return false;
-        diasum = 0;
-        k=i; l=j+len-1;
-        while(k<i+len && l>=j){
-            diasum += grid[k][l];
-            k++; l--;
+        else{
+            if(sum!=mainDiaPrefix[i+len-1][j+len-1]-mainDiaPrefix[i-1][j-1]) return false;
         }
-        if(diasum!=sum) return false;
+        //Anti diagonal sum:
+        if(i==0 || j+len-1==m-1){
+            if(sum!=antiDiaPrefix[i+len-1][j]) return false;
+        }
+        else{
+            if(sum!=antiDiaPrefix[i+len-1][j]-antiDiaPrefix[i-1][j+len]) return false;
+        }
         return true;
     }
 
     int largestMagicSquare(vector<vector<int>>& grid) {
         int n = grid.size();
         int m = grid[0].size();
+
+        vector<vector<int>> rowPrefix = grid;
+        vector<vector<int>> colPrefix = grid;
+        vector<vector<int>> mainDiaPrefix = grid;
+        vector<vector<int>> antiDiaPrefix = grid;
+
+        for(int i=1; i<n; i++){
+            for(int j=0; j<m; j++){
+                colPrefix[i][j] += colPrefix[i-1][j];
+            }
+        }
+        for(int j=1; j<m; j++){
+            for(int i=0; i<n; i++){
+                rowPrefix[i][j] += rowPrefix[i][j-1];
+            }
+        }
+        for(int i=1; i<n; i++){
+            for(int j=1; j<m; j++){
+                mainDiaPrefix[i][j] += mainDiaPrefix[i-1][j-1];
+            }
+        }
+        for(int i=1; i<n; i++){
+            for(int j=0; j<m-1; j++){
+                antiDiaPrefix[i][j] += antiDiaPrefix[i-1][j+1];
+            }
+        }
         int maxlen = 1;
         for(int i=0; i<n; i++){
             for(int j=0; j<m; j++){
-                for(int len=2; len<=min(m,n); len++){
-                    if(isValid(i, j, grid, len)) maxlen = max(maxlen, len);
+                for(int len=min(n-i, m-j); len>=2; len--){
+                    if(isValid(i, j, len, grid, rowPrefix, colPrefix, mainDiaPrefix, antiDiaPrefix)){
+                        maxlen = max(maxlen, len);
+                        break;
+                    }
                 }
             }
         }
