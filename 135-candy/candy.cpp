@@ -43,20 +43,14 @@ public:
         for(int i=0; i<lower.size(); i++){
             int idx = lower[i]-1;
             int count = 2;
-            while(idx>=0 && idx+1<n && ratings[idx]>=ratings[idx+1]){
-                if(ratings[idx]==ratings[idx+1]){
-                    break;
-                }
+            while(idx>=0 && idx+1<n && ratings[idx]>ratings[idx+1]){
                 if(candies[idx]<count) candies[idx] = count;
                 count++;
                 idx--;
             }
             idx = lower[i]+1;
             count = 2;
-            while(idx<n && idx-1>=0 && ratings[idx]>=ratings[idx-1]){
-                if(ratings[idx]==ratings[idx-1]){
-                    break;
-                }
+            while(idx<n && idx-1>=0 && ratings[idx]>ratings[idx-1]){
                 if(candies[idx]<count) candies[idx] = count;
                 count++;
                 idx++;
